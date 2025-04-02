@@ -7,8 +7,14 @@ import {
   DrawerItem,
   Button
 } from '@ui-kitten/components'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import EditButton from './components/EditButton'
 import PlantsInfos from './components/PlantsInfos'
+
+type RootStackParamList = {
+  PlantPage: { plant: PlantProps };
+};
 
 interface PlantProps {
   name: string
@@ -23,7 +29,9 @@ interface HomePageProps {
 }
 
 const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
-  const [plants, setPlants] = React.useState<PlantProps[]>(initialPlants);
+  const [plants, setPlants] = React.useState<PlantProps[]>(initialPlants)
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+
   // Fonction pour mettre à jour une plante
   const updatePlantName = (index: number, newName: string) => {
     setPlants((prevPlants: PlantProps[]) => {
@@ -87,6 +95,7 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
                 <EditButton id={index} onSave={updatePlantName} />
               )}
               accessoryRight={() => <PlantsInfos {...plant} />}
+              onPress={() => navigation.navigate('PlantPage', { plant: plants[index] })}
             />
           ))}
         </Drawer>

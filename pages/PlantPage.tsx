@@ -6,11 +6,12 @@ enum Mood {
   Sad = 'sad'
 }
 
-interface PlantData {
-  temperature: number
-  photoResistance: number
+interface PlantProps {
+  name: string
+  type: string
   waterLevel: number
-  mood: Mood
+  temperature: number
+  sunlight: number
 }
 
 const getSmiley = (mood: Mood): string => {
@@ -26,47 +27,31 @@ const getSmiley = (mood: Mood): string => {
   }
 }
 
-const PlantPage: React.FC = () => {
-  const [plantData, setPlantData] = useState<PlantData>({
-    temperature: 0,
-    photoResistance: 0,
-    waterLevel: 0,
-    mood: Mood.Neutral
-  })
+interface PlantPageProps {
+  plantData: PlantProps
+  onValveActivation: () => void
+}
+
+const PlantPage: React.FC<PlantPageProps> = ({
+  plantData,
+  onValveActivation
+}) => {
   const [isValveActive, setIsValveActive] = useState<boolean>(false)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const temperature = parseFloat((20 + Math.random() * 10).toFixed(1)) // Between 20 and 30°C
-      const photoResistance = parseFloat((Math.random() * 100).toFixed(1)) // Between 0 and 100
-      const waterLevel = parseFloat((Math.random() * 100).toFixed(1)) // Between 0 and 100
-
-      let mood: Mood
-      if (waterLevel > 50 && temperature >= 22 && temperature <= 28)
-        mood = Mood.Happy
-      else if (waterLevel < 30 || temperature < 22 || temperature > 28)
-        mood = Mood.Sad
-      else mood = Mood.Neutral
-
-      setPlantData({
-        temperature,
-        photoResistance,
-        waterLevel,
-        mood
-      })
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [])
 
   const handleValveActivation = () => {
     setIsValveActive(true)
+    onValveActivation()
 
     setTimeout(() => {
       setIsValveActive(false)
     }, 2000)
   }
-
+  let mood: Mood
+  if (plantData.waterLevel > 50 && plantData.temperature >= 22 && plantData.temperature <= 28)
+    mood = Mood.Happy
+  else if (plantData.waterLevel < 30 || plantData.temperature < 22 || plantData.temperature > 28)
+    mood = Mood.Sad
+  else mood = Mood.Neutral
   return (
     <div
       style={{
@@ -76,11 +61,11 @@ const PlantPage: React.FC = () => {
         padding: '20px'
       }}
     >
-      <h1 style={{ fontSize: '80px' }}>{getSmiley(plantData.mood)}</h1>
+      <h1 style={{ fontSize: '80px' }}>{getSmiley(mood)}</h1>
 
       <div style={{ margin: '20px 0', fontSize: '18px' }}>
         <p>Température détectée : {plantData.temperature} °C</p>
-        <p>Photorésistance : {plantData.photoResistance}</p>
+        <p>Photorésistance : {plantData.sunlight}</p>
         <p>Niveau d'eau / humidité : {plantData.waterLevel} %</p>
       </div>
 

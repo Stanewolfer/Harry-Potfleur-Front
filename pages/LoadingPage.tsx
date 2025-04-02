@@ -11,7 +11,7 @@ export const LoadingScreen = (): React.ReactElement => (
       alignItems: 'center',
       gap: 20,
       paddingTop: 50,
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
     }}
     level='1'
   >
