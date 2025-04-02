@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as eva from '@eva-design/eva'
 import {
   ApplicationProvider,
@@ -9,9 +9,46 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import { default as theme } from './theme.json'
 import HomePage from './pages/HomePage'
 import { LoadingScreen } from './pages/LoadingPage'
+import * as Paho from 'paho-mqtt'
+
+const MQTT_BROKER = 'wss://test.mosquitto.org:8081' // URL du broker en WebSocket
+const TOPIC = 'mon_app/plants'
 
 export default () => {
   const [isLoading, setIsLoading] = useState(true)
+  const [message, setMessage] = useState('')
+
+ // Initialisation du client MQTT
+ const client = new Paho.Client(
+  'test.mosquitto.org', // Host MQTT
+  8081, // Port WebSocket
+  `rn_client_${Math.random()}` // ID unique pour le client
+)
+
+// Définir les callbacks
+client.onConnectionLost = (responseObject) => {
+  if (responseObject.errorCode !== 0) {
+    console.log(`Connexion perdue : ${responseObject.errorMessage}`)
+  }
+}
+
+client.onMessageArrived = (message) => {
+  console.log(`Message reçu sur ${message.destinationName}: ${message.payloadString}`)
+  setMessage(message.payloadString)
+}
+
+// Connexion au broker
+client.connect({
+  onSuccess: () => {
+    console.log('Connecté à MQTT')
+    client.subscribe('plante/valve')
+  },
+  useSSL: true,
+  timeout: 10,
+  onFailure: (err) => console.log('Erreur de connexion MQTT', err)
+})
+
+
   // Mock data for plants
   const plants = [
     {
