@@ -84,19 +84,23 @@ const fetchPlantData = async (): Promise<PlantProps> => {
 
     const data = await response.json();
     const { name, type, temperature, sunlight, waterLevel } = data;
-    let mood: Mood;
 
-    if (waterLevel > 50 && temperature >= 22 && temperature <= 28)
-      mood = Mood.Happy;
-    else if (waterLevel < 30 || temperature < 22 || temperature > 28)
-      mood = Mood.Sad;
-    else mood = Mood.Neutral;
+    const computedMood: Mood =
+      waterLevel > 50 &&
+      temperature >= 22 &&
+      temperature <= 28
+        ? Mood.Happy
+        : waterLevel < 30 ||
+          temperature < 22 ||
+          temperature > 28
+        ? Mood.Sad
+        : Mood.Neutral;
 
-    return { name, type, temperature, sunlight, waterLevel, mood };
+    return { name, type, temperature, sunlight, waterLevel, mood: computedMood };
   } catch (error) {
     console.error(error);
     
-    return {
+    return {         
       name: 'Plante introuvable',
       type: '',
       temperature: 22,
