@@ -192,7 +192,7 @@ const PlantPage: React.FC<PlantPageProps> = ({
             renderIcon={sunlightIcon}
           />
           <Text category='s1' style={styles.infoText}>
-            Luminosité ► {plantData.sunlight}
+            Luminosité ► {plantData.sunlight} Lux
           </Text>
         </Layout>
         <Layout style={styles.infoRow}>
