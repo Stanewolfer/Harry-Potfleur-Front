@@ -5,24 +5,28 @@ import {
   Divider,
   Drawer,
   DrawerItem,
-  Button} from '@ui-kitten/components'
+  Button
+} from '@ui-kitten/components'
 import EditButton from './components/EditButton'
 import PlantsInfos from './components/PlantsInfos'
 
+interface PlantProps {
+  name: string
+  type: string
+  waterLevel: number
+  temperature: number
+  sunlight: number
+}
 
-export default function HomePage() {
-  // Mock data for plants
-const [plants, setPlants] = React.useState([
-    { name: 'Monstera', type: 'Tropical', waterLevel: 75, temperature: 23, sunlight: 65 },
-    { name: 'Cactus', type: 'Desert', waterLevel: 20, temperature: 28, sunlight: 90 },
-    { name: 'Fern', type: 'Tropical', waterLevel: 85, temperature: 21, sunlight: 40 },
-    { name: 'Bamboo', type: 'Tropical', waterLevel: 70, temperature: 22, sunlight: 60 },
-    { name: 'Succulent', type: 'Desert', waterLevel: 25, temperature: 26, sunlight: 85 }
-])
+interface HomePageProps {
+  plants: PlantProps[]
+}
 
+const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
+  const [plants, setPlants] = React.useState<PlantProps[]>(initialPlants);
   // Fonction pour mettre à jour une plante
   const updatePlantName = (index: number, newName: string) => {
-    setPlants(prevPlants => {
+    setPlants((prevPlants: PlantProps[]) => {
       const updatedPlants = [...prevPlants]
       updatedPlants[index] = { ...updatedPlants[index], name: newName }
       return updatedPlants
@@ -66,7 +70,9 @@ const [plants, setPlants] = React.useState([
         <Text category='h5' status='success'>
           Liste de vos plantes
         </Text>
-        <Button appearance='outline'>Synchroniser vos nouveaux potfleurs</Button>
+        <Button appearance='outline'>
+          Synchroniser vos nouveaux potfleurs
+        </Button>
         <Drawer
           style={{
             width: '100%',
@@ -80,14 +86,13 @@ const [plants, setPlants] = React.useState([
               accessoryLeft={() => (
                 <EditButton id={index} onSave={updatePlantName} />
               )}
-              accessoryRight={() => (
-                <PlantsInfos {...plant} />
-              )}
+              accessoryRight={() => <PlantsInfos {...plant} />}
             />
           ))}
         </Drawer>
       </Layout>
     </Layout>
   )
-}
+})
 
+export default HomePage
