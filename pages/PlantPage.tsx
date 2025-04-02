@@ -103,9 +103,9 @@ const fetchPlantData = async (): Promise<PlantProps> => {
     return {         
       name: 'Plante introuvable',
       type: '',
-      temperature: 22,
-      sunlight: 60,
-      waterLevel: 51,
+      temperature: 0,
+      sunlight: 0,
+      waterLevel: 0,
       mood: Mood.Neutral
     };
   }
