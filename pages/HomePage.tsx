@@ -53,69 +53,72 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
         sunlight: 75
       }
     ]
-    setPlants((prevPlants) => [...prevPlants, ...newPlants])
+    setPlants(prevPlants => [...prevPlants, ...newPlants])
   }
 
   // Plants list component
   return (
     <ScrollView style={{ flex: 1, width: '100%' }}>
       <Layout
-      style={{
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start'
-      }}
-      >
-      <Layout
         style={{
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        padding: 10,
-        width: '100%'
+          flex: 1,
+          flexDirection: 'column',
+          justifyContent: 'flex-start',
+          alignItems: 'flex-start'
         }}
       >
-        <Text category='h5' status='primary'>
-        Bienvenue sur Harry Potfleur
-        </Text>
-        <Text category='s1' status='primary'>
-        Une application de gestion de potfleurs
-        </Text>
-      </Layout>
-      <Divider style={{ width: '100%' }} />
-      <Layout
-        style={{
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-        padding: 10,
-        width: '100%'
-        }}
-      >
-        <Text category='h5' status='success'>
-        Liste de vos plantes
-        </Text>
-        <Divider style={{ width: '60%', margin: 10 }} />
-        <Button appearance='outline' onPress={fetchPlants}>
-        Synchroniser vos nouveaux potfleurs
-        </Button>
-        <Drawer
-        style={{
-          width: '100%',
-          height: '100%'
-        }}
+        <Layout
+          style={{
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            padding: 10,
+            width: '100%',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1
+          }}
         >
-        {plants.map((plant, index) => (
-          <DrawerItem
-          key={index}
-          title={`${plant.name} (${plant.type})`}
-          accessoryLeft={() => (
-            <EditButton id={index} onSave={updatePlantName} />
-          )}
-          accessoryRight={() => <PlantsInfos {...plant} />}
-          />
-        ))}
-        </Drawer>
-      </Layout>
+          <Text category='h5' status='primary'>
+            Bienvenue sur Harry Potfleur
+          </Text>
+          <Text category='s1' status='primary'>
+            Une application de gestion de potfleurs
+          </Text>{' '}
+          <Divider style={{ width: '100%', marginVertical:10 }} />
+          <Text category='h5' status='success'>
+            Liste de vos plantes
+          </Text>
+          <Divider style={{ width: '60%', margin: 10 }} />
+        </Layout>
+        <Layout
+          style={{
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            padding: 10,
+            width: '100%'
+          }}
+        >
+          <Button appearance='outline' onPress={fetchPlants} style={{ marginVertical: 10 }}>
+            Synchroniser vos nouveaux potfleurs
+          </Button>
+          <Drawer
+            style={{
+              width: '100%',
+              height: '100%'
+            }}
+          >
+            {plants.map((plant, index) => (
+              <DrawerItem
+                key={index}
+                title={plant.name}
+                accessoryLeft={() => (
+                  <EditButton id={index} onSave={updatePlantName} />
+                )}
+                accessoryRight={() => <PlantsInfos {...plant} />}
+              />
+            ))}
+          </Drawer>
+        </Layout>
       </Layout>
     </ScrollView>
   )

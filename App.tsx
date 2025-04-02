@@ -51,7 +51,6 @@ export default () => {
     }
   ]
 
-
   // Simulate loading time
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,7 +59,7 @@ export default () => {
 
     return () => clearTimeout(timer) // Cleanup the timer on unmount
   }, [])
-  
+
   return (
     <>
       <IconRegistry icons={EvaIconsPack} />
