@@ -7,11 +7,12 @@ enum Mood {
   Sad = 'sad'
 }
 
-interface PlantData {
-  temperature: number;
-  photoResistance: number;
-  waterLevel: number;
-  mood: Mood;
+interface PlantProps {
+  name: string
+  type: string
+  waterLevel: number
+  temperature: number
+  sunlight: number
 }
 
 const fetchPlantData = async (): Promise<PlantData> => {
@@ -67,43 +68,47 @@ const getSmiley = (mood: Mood): string => {
   }
 };
 
-const PlantPage: React.FC = () => {
-  const [plantData, setPlantData] = useState<PlantData>({
-    temperature: 0,
-    photoResistance: 0,
-    waterLevel: 0,
-    mood: Mood.Neutral
-  });
-  const [isValveActive, setIsValveActive] = useState<boolean>(false);
+interface PlantPageProps {
+  plantData: PlantProps
+  onValveActivation: () => void
+}
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const data = await fetchPlantData();
-      setPlantData(data);
-    }, 5 * 1000);
+const PlantPage: React.FC<PlantPageProps> = ({
+  plantData,
+  onValveActivation
+}) => {
+  const [isValveActive, setIsValveActive] = useState<boolean>(false)
 
-    return () => clearInterval(interval);
-  }, []);
+  const handleValveActivation = () => {
+    setIsValveActive(true)
+    onValveActivation()
 
-  const handleValveActivation = async () => {
-    setIsValveActive(true);
-    await activateWaterValve();
     setTimeout(() => {
-      setIsValveActive(false);
-    }, 2 * 1000);
-  };
-
+      setIsValveActive(false)
+    }, 2000)
+  }
+  let mood: Mood
+  if (plantData.waterLevel > 50 && plantData.temperature >= 22 && plantData.temperature <= 28)
+    mood = Mood.Happy
+  else if (plantData.waterLevel < 30 || plantData.temperature < 22 || plantData.temperature > 28)
+    mood = Mood.Sad
+  else mood = Mood.Neutral
   return (
-    <Layout style={{ flex: 1, padding: 20, alignItems: 'center', justifyContent: 'center' }}>
-      <Text category='h1' style={{ fontSize: 80 }}>
-        {getSmiley(plantData.mood)}
-      </Text>
+    <div
+      style={{
+        maxWidth: '600px',
+        margin: '0 auto',
+        textAlign: 'center',
+        padding: '20px'
+      }}
+    >
+      <h1 style={{ fontSize: '80px' }}>{getSmiley(mood)}</h1>
 
-      <Layout style={{ marginVertical: 20, alignItems: 'center' }}>
-        <Text category='s1'>Température : {plantData.temperature} °C</Text>
-        <Text category='s1'>Photorésistance : {plantData.photoResistance}</Text>
-        <Text category='s1'>Niveau d'eau / humidité : {plantData.waterLevel} %</Text>
-      </Layout>
+      <div style={{ margin: '20px 0', fontSize: '18px' }}>
+        <p>Température détectée : {plantData.temperature} °C</p>
+        <p>Photorésistance : {plantData.sunlight}</p>
+        <p>Niveau d'eau / humidité : {plantData.waterLevel} %</p>
+      </div>
 
       <Button onPress={handleValveActivation} disabled={isValveActive}>
         {isValveActive ? 'Activation en cours...' : "Activer l'eau"}
@@ -112,4 +117,4 @@ const PlantPage: React.FC = () => {
   );
 };
 
-export default PlantPage;
+export default PlantPage

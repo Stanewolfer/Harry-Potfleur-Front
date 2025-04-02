@@ -1,64 +1,105 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { NavigationContainer } from '@react-navigation/native'
+import {
+  createNativeStackNavigator,
+  NativeStackScreenProps
+} from '@react-navigation/native-stack'
 import * as eva from '@eva-design/eva'
 import {
   ApplicationProvider,
-  Layout,
-  Text,
-  Divider,
-  Drawer,
-  DrawerItem
+  IconRegistry,
+  Layout
 } from '@ui-kitten/components'
+import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import { default as theme } from './theme.json'
+import HomePage from './pages/HomePage'
+import { LoadingScreen } from './pages/LoadingPage'
+import PlantPage from './pages/PlantPage'
 
-export default () => (
-  <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
-    <Layout
-      style={{
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start'
-      }}
-    >
-      <Layout
-        style={{
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          padding: 10,
-          width: '100%'
-        }}
-      >
-        <Text category='h5' status='primary'>
-          Bienvenue sur Harry Potfleur
-        </Text>
-        <Text category='s1' status='primary'>
-          Une application de gestion de potfleurs
-        </Text>
-      </Layout> 
-      <Divider style={{ width: '100%' }} />
-      <Layout
-        style={{
-          justifyContent: 'flex-start',
-          alignItems: 'flex-start',
-          padding: 10,
-          width: '100%'
-        }}
-      >
-        <Text category='h5' status='success'>
-          Liste de vos plantes
-        </Text>
-        <Drawer
-          style={{
-            width: '100%',
-            height: '100%',
-          }}
-        >
-          <DrawerItem title='Roses' />
-          <DrawerItem title='Pivoines' />
-          <DrawerItem title='Tulipes' />
-          <DrawerItem title='Orchidées' />
-        </Drawer>
-      </Layout>
-    </Layout>
-  </ApplicationProvider>
-)
+export default () => {
+  const Stack = createNativeStackNavigator()
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Mock data for plants
+  const plants = [
+    {
+      name: 'Monstera',
+      type: 'Tropical',
+      waterLevel: 75,
+      temperature: 23,
+      sunlight: 65
+    },
+    {
+      name: 'Cactus',
+      type: 'Desert',
+      waterLevel: 20,
+      temperature: 28,
+      sunlight: 90
+    },
+    {
+      name: 'Fern',
+      type: 'Tropical',
+      waterLevel: 85,
+      temperature: 21,
+      sunlight: 40
+    },
+    {
+      name: 'Bamboo',
+      type: 'Tropical',
+      waterLevel: 70,
+      temperature: 22,
+      sunlight: 60
+    },
+    {
+      name: 'Succulent',
+      type: 'Desert',
+      waterLevel: 25,
+      temperature: 26,
+      sunlight: 85
+    }
+  ]
+
+  // Simulate loading time
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 2000) // 2 seconds loading time
+    console.log('Loading...')
+    console.log('Plants:', plants)
+    return () => clearTimeout(timer) // Cleanup the timer on unmount
+  }, [])
+
+  return (
+    <>
+      <IconRegistry icons={EvaIconsPack} />
+      <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen
+              name='Home'
+              component={(props: React.JSX.IntrinsicAttributes) =>
+                isLoading ? (
+                  <LoadingScreen {...props} />
+                ) : (
+                  <HomePage plants={plants} {...props} />
+                )
+              }
+            />
+            <Stack.Screen
+              name='PlantPage'
+              component={(props: NativeStackScreenProps<any, 'PlantPage'>) => (
+                <PlantPage
+                  plantData={props.route.params?.plant || {}}
+                  onValveActivation={function (): void {
+                    throw new Error('Function not implemented.')
+                  }}
+                  {...props}
+                />
+              )}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ApplicationProvider>
+    </>
+  )
+}
