@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { StyleSheet } from 'react-native';
 import { Layout, Text, Button } from '@ui-kitten/components';
 
 enum Mood {
@@ -8,52 +9,13 @@ enum Mood {
 }
 
 interface PlantProps {
-  name: string
-  type: string
-  waterLevel: number
-  temperature: number
-  sunlight: number
+  name: string;
+  type: string;
+  waterLevel: number;
+  temperature: number;
+  sunlight: number;
+  mood: Mood;
 }
-
-const fetchPlantData = async (): Promise<PlantData> => {
-  try {
-    const response = await fetch('');
-    if (!response.ok)
-      throw new Error('Erreur lors de la récupération des données');
-
-    const data = await response.json();
-    const { temperature, photoResistance, waterLevel } = data;
-    let mood: Mood;
-
-    if (waterLevel > 50 && temperature >= 22 && temperature <= 28)
-      mood = Mood.Happy;
-    else if (waterLevel < 30 || temperature < 22 || temperature > 28)
-      mood = Mood.Sad;
-    else
-      mood = Mood.Neutral;
-    
-    return { temperature, photoResistance, waterLevel, mood };
-  } catch (error) {
-    console.error(error);
-    const temperature = 0;
-    const photoResistance = 0;
-    const waterLevel = 0;
-    const mood = Mood.Neutral;
-    return { temperature, photoResistance, waterLevel, mood };
-  }
-};
-
-const activateWaterValve = async (): Promise<void> => {
-  try {
-    const response = await fetch('', {
-      method: 'POST'
-    });
-    if (!response.ok)
-      throw new Error('Erreur lors de l\'activation de la valve');
-  } catch (error) {
-    console.error(error);
-  }
-};
 
 const getSmiley = (mood: Mood): string => {
   switch (mood) {
@@ -69,47 +31,87 @@ const getSmiley = (mood: Mood): string => {
 };
 
 interface PlantPageProps {
-  plantData: PlantProps
-  onValveActivation: () => void
+  plantData: PlantProps;
+  onValveActivation: () => void;
 }
 
-const PlantPage: React.FC<PlantPageProps> = ({
-  plantData,
-  onValveActivation
-}) => {
-  const [isValveActive, setIsValveActive] = useState<boolean>(false)
+const fetchPlantData = async (): Promise<PlantProps> => {
+  try {
+    const response = await fetch('');
+    if (!response.ok)
+      throw new Error('Erreur lors de la récupération des données');
 
-  const handleValveActivation = () => {
-    setIsValveActive(true)
-    onValveActivation()
+    const data = await response.json();
+    const { name, type, temperature, sunlight, waterLevel } = data;
+    let mood: Mood;
 
-    setTimeout(() => {
-      setIsValveActive(false)
-    }, 2000)
+    if (waterLevel > 50 && temperature >= 22 && temperature <= 28)
+      mood = Mood.Happy;
+    else if (waterLevel < 30 || temperature < 22 || temperature > 28)
+      mood = Mood.Sad;
+    else
+      mood = Mood.Neutral;
+
+    return { name, type, temperature, sunlight, waterLevel, mood };
+  } catch (error) {
+    console.error(error);
+    return {
+      name: "Introuvable",
+      type: "",
+      temperature: 0,
+      sunlight: 0,
+      waterLevel: 0,
+      mood: Mood.Neutral
+    };
   }
-  let mood: Mood
-  if (plantData.waterLevel > 50 && plantData.temperature >= 22 && plantData.temperature <= 28)
-    mood = Mood.Happy
-  else if (plantData.waterLevel < 30 || plantData.temperature < 22 || plantData.temperature > 28)
-    mood = Mood.Sad
-  else mood = Mood.Neutral
+};
+
+const activateWaterValve = async (): Promise<void> => {
+  try {
+    const response = await fetch('', {
+      method: 'POST'
+    });
+    if (!response.ok)
+      throw new Error('Erreur lors de l\'activation de la valve');
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const PlantPage: React.FC<PlantPageProps> = ({ plantData: initialPlantData, onValveActivation }) => {
+  const [plantData, setPlantData] = useState<PlantProps>(initialPlantData);
+  const [isValveActive, setIsValveActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    const getData = async () => {
+      const data = await fetchPlantData();
+      setPlantData(data);
+    };
+
+    getData();
+    const interval = setInterval(getData, 5 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleValveActivation = async () => {
+    setIsValveActive(true);
+    await activateWaterValve();
+    onValveActivation();
+    setTimeout(() => {
+      setIsValveActive(false);
+    }, 2 * 1000);
+  };
+
   return (
-    <div
-      style={{
-        maxWidth: '600px',
-        margin: '0 auto',
-        textAlign: 'center',
-        padding: '20px'
-      }}
-    >
-      <h1 style={{ fontSize: '80px' }}>{getSmiley(mood)}</h1>
-
-      <div style={{ margin: '20px 0', fontSize: '18px' }}>
-        <p>Température détectée : {plantData.temperature} °C</p>
-        <p>Photorésistance : {plantData.sunlight}</p>
-        <p>Niveau d'eau / humidité : {plantData.waterLevel} %</p>
-      </div>
-
+    <Layout style={styles.container}>
+      <Text category="h1" style={styles.smiley}>
+        {getSmiley(plantData.mood)}
+      </Text>
+      <Layout style={styles.infoContainer}>
+        <Text category="s1">Température : {plantData.temperature} °C</Text>
+        <Text category="s1">Photorésistance : {plantData.sunlight}</Text>
+        <Text category="s1">Niveau d'eau / humidité : {plantData.waterLevel} %</Text>
+      </Layout>
       <Button onPress={handleValveActivation} disabled={isValveActive}>
         {isValveActive ? 'Activation en cours...' : "Activer l'eau"}
       </Button>
@@ -117,4 +119,21 @@ const PlantPage: React.FC<PlantPageProps> = ({
   );
 };
 
-export default PlantPage
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  smiley: {
+    fontSize: 80,
+    marginBottom: 20
+  },
+  infoContainer: {
+    marginBottom: 20,
+    alignItems: 'center'
+  }
+});
+
+export default PlantPage;
