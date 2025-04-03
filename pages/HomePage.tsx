@@ -1,68 +1,111 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   Layout,
   Text,
   Divider,
   Drawer,
   DrawerItem
-} from '@ui-kitten/components';
-import { StyleSheet, SafeAreaView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import EditButton from './components/EditButton';
-import PlantsInfos from './components/PlantsInfos';
-
-type RootStackParamList = {
-  PlantPage: { plant: PlantProps };
-};
+} from '@ui-kitten/components'
+import EditButton from './components/EditButton'
+import PlantsInfos from './components/PlantsInfos'
+import { SafeAreaView, ScrollView, StyleSheet } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { useMqtt } from '../MqttContext' // ✅ Import du contexte MQTT
 
 interface PlantProps {
-  name: string;
-  type: string;
-  waterLevel: number;
-  temperature: number;
-  sunlight: number;
+  name: string
+  waterLevel: number
+  temperature: number
+  sunlight: number
 }
 
-interface HomePageProps {
-  plants: PlantProps[];
+type RootStackParamList = {
+  PlantPage: { plant: PlantProps }
 }
 
-const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
-  const [plants, setPlants] = React.useState<PlantProps[]>(initialPlants);
+const HomePage = React.memo(() => {
+  const [plants, setPlants] = useState<PlantProps[]>([
+    {
+      name: 'Monstera',
+      waterLevel: 75,
+      temperature: 23,
+      sunlight: 65
+    },
+    {
+      name: 'Cactus',
+      waterLevel: 20,
+      temperature: 28,
+      sunlight: 90
+    },
+    {
+      name: 'Fern',
+      waterLevel: 85,
+      temperature: 21,
+      sunlight: 40
+    },
+    {
+      name: 'Bamboo',
+      waterLevel: 70,
+      temperature: 22,
+      sunlight: 60
+    },
+    {
+      name: 'Succulent',
+      waterLevel: 25,
+      temperature: 26,
+      sunlight: 85
+    }
+  ])
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const { message } = useMqtt()
 
-  // Function to update a plant's name
-  const updatePlantName = (index: number, newName: string) => {
-    setPlants((prevPlants) => {
-      const updatedPlants = [...prevPlants];
-      updatedPlants[index] = { ...updatedPlants[index], name: newName };
-      return updatedPlants;
-    });
-  };
+  // 🔥 Mettre à jour le nom de la plante
+  const updatePlantName = (id: number, newName: string) => {
+    setPlants((prevPlants) =>
+      prevPlants.map((plant, index) =>
+        index === id ? { ...plant, name: newName } : plant
+      )
+    )
+  }
 
+  // 🔥 Mettre à jour les plantes lorsqu'un message MQTT est reçu
+  useEffect(() => {
+    if (message) {
+      try {
+        const plantData: PlantProps = JSON.parse(message)
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour des données MQTT:', error)
+      }
+    }
+  }, [message])
+
+  // 📜 Affichage de la liste des plantes
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Layout style={styles.container} level="1">
+      <Layout style={styles.container}>
         <Layout style={styles.header}>
-          <Text category="h4" status="primary" style={styles.title}>
-            🌱 Harry Potfleur
+          <Text category='h5' status='primary'>
+            Bienvenue sur Harry Potfleur
           </Text>
-          <Text category="s1" appearance="hint" style={styles.subtitle}>
+          <Text category='s1' appearance='hint' style={styles.subtitle}>
             Gérez vos plantes avec amour et simplicité.
           </Text>
-          <Text category="s2" appearance="hint" style={styles.description}>
+          <Text category='s2' appearance='hint' style={styles.description}>
             Sélectionnez une plante pour consulter ses détails et l'éditer.
           </Text>
           <Divider style={styles.fullDivider} />
-          <Text category="h5" status="success" style={styles.sectionTitle}>
+          <Text category='h5' status='success' style={styles.sectionTitle}>
             Vos plantes
           </Text>
         </Layout>
 
         <Layout style={styles.drawerContainer}>
-          <Drawer style={styles.drawer} contentContainerStyle={styles.drawerContent}>
+          <Drawer
+            style={styles.drawer}
+            contentContainerStyle={styles.drawerContent}
+          >
             {plants.map((plant, index) => (
               <DrawerItem
                 key={index}
@@ -73,15 +116,17 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
                   </Layout>
                 )}
                 accessoryRight={() => <PlantsInfos {...plant} />}
-                onPress={() => navigation.navigate('PlantPage', { plant: plants[index] })}
+                onPress={() =>
+                  navigation.navigate('PlantPage', { plant: plants[index] })
+                }
               />
             ))}
           </Drawer>
         </Layout>
       </Layout>
     </SafeAreaView>
-  );
-});
+  )
+})
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -122,7 +167,6 @@ const styles = StyleSheet.create({
   },
   drawerContainer: {
     flex: 1,
-    paddingHorizontal: 10,
     backgroundColor: '#1C2541'
   },
   drawer: {
@@ -135,6 +179,6 @@ const styles = StyleSheet.create({
   editButtonContainer: {
     marginRight: -10
   }
-});
+})
 
-export default HomePage;
+export default HomePage

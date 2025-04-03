@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react'
+import { StyleSheet, TouchableOpacity } from 'react-native'
 import {
   CircularProgressBar,
   Icon,
@@ -9,158 +9,118 @@ import {
   Button,
   IconProps,
   Spinner
-} from '@ui-kitten/components';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+} from '@ui-kitten/components'
+import { useMqtt } from '../MqttContext' // ✅ Import du contexte MQTT
+import { useNavigation } from '@react-navigation/native'
 
-type RootStackParamList = {
-  PlantPage: { plant: PlantProps };
-};
-
-// Definition of the plant's possible moods
 enum Mood {
   Happy = 'happy',
   Neutral = 'neutral',
   Sad = 'sad'
 }
 
-// Interface describing the properties of a plant
 interface PlantProps {
-  name: string;
-  type: string;
-  waterLevel: number;
-  temperature: number;
-  sunlight: number;
-  mood: Mood;
+  name: string
+  waterLevel: number
+  temperature: number
+  sunlight: number
+  mood: Mood
 }
 
-// Function that returns an emoji (smiley) based on the previous mood
 const getSmiley = (mood: Mood): string => {
   switch (mood) {
     case Mood.Happy:
-      return '😊';
+      return '😊'
     case Mood.Neutral:
-      return '😐';
+      return '😐'
     case Mood.Sad:
-      return '😢';
+      return '😢'
     default:
-      return '😐';
+      return '😐'
   }
-};
-
-// Interface of the props of the PlantPage component
-interface PlantPageProps {
-  plantData: PlantProps;
-  onValveActivation: () => void;
 }
 
-// Function that returns the water icon with its custom color
 const waterIcon = (props: IconProps): IconElement => (
   <Icon
     {...props}
     name='droplet-outline'
     style={[props.style, { tintColor: '#2196F3' }]}
   />
-);
+)
 
-// Function that returns the temperature icon with its custom color
 const temperatureIcon = (props: IconProps): IconElement => (
   <Icon
     {...props}
     name='thermometer-outline'
     style={[props.style, { tintColor: '#FF5722' }]}
   />
-);
+)
 
-// Function that returns the light icon with its custom color
 const sunlightIcon = (props: IconProps): IconElement => (
   <Icon
     {...props}
     name='sun-outline'
     style={[props.style, { tintColor: '#FFC107' }]}
   />
-);
+)
 
-// Asynchronous function that fetches the plant data from the backend
 const fetchPlantData = async (): Promise<PlantProps> => {
   try {
-    const response = await fetch('');
+    const response = await fetch('')
     if (!response.ok)
-      throw new Error('Erreur lors de la récupération des données');
+      throw new Error('Erreur lors de la récupération des données')
 
-    const data = await response.json();
-    const { name, type, temperature, sunlight, waterLevel } = data;
+    const data = await response.json()
+    const { name, type, temperature, sunlight, waterLevel } = data
 
     const computedMood: Mood =
-      waterLevel > 50 &&
-      temperature >= 22 &&
-      temperature <= 28
+      waterLevel > 50 && temperature >= 22 && temperature <= 28
         ? Mood.Happy
-        : waterLevel < 30 ||
-          temperature < 22 ||
-          temperature > 28
+        : waterLevel < 30 || temperature < 22 || temperature > 28
         ? Mood.Sad
-        : Mood.Neutral;
+        : Mood.Neutral
 
-    return { name, type, temperature, sunlight, waterLevel, mood: computedMood };
+    return { name, temperature, sunlight, waterLevel, mood: computedMood }
   } catch (error) {
-    console.error(error);
-    
-    return {         
+    console.error(error)
+    return {
       name: 'Plante introuvable',
-      type: '',
       temperature: 0,
       sunlight: 0,
       waterLevel: 0,
       mood: Mood.Neutral
-    };
+    }
   }
-};
+}
 
-// Asynchronous function that activates the water valve from the backend
-const activateWaterValve = async (): Promise<void> => {
-  try {
-    const response = await fetch('', {
-      method: 'POST'
-    });
-    if (!response.ok) throw new Error("Erreur lors de l'activation de la valve");
-  } catch (error) {
-    console.error(error);
-  }
-};
+const PlantPage: React.FC = () => {
+  const mqttClient = useMqtt()
+  const { client } = mqttClient
 
-// Main component displaying the plant information
-const PlantPage: React.FC<PlantPageProps> = ({
-  plantData: initialPlantData,
-  onValveActivation
-}) => {
-  const [plantData, setPlantData] = useState<PlantProps>(initialPlantData);
-  const [isValveActive, setIsValveActive] = useState<boolean>(false);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [plantData, setPlantData] = useState<PlantProps | null>(null)
+  const [isValveActive, setIsValveActive] = useState<boolean>(false)
+  const navigation = useNavigation()
 
   useEffect(() => {
     const getData = async () => {
-      const data = await fetchPlantData();
-      setPlantData(data);
-    };
+      const data = await fetchPlantData()
+      setPlantData(data)
+    }
 
-    getData();
-    const interval = setInterval(getData, 5 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    getData()
+    const interval = setInterval(getData, 5 * 1000)
+    return () => clearInterval(interval)
+  }, [])
 
-  // Function that handles the valve activation
-  const handleValveActivation = async () => {
-    setIsValveActive(true);
-    await activateWaterValve();
-    onValveActivation();
-    setTimeout(() => {
-      setIsValveActive(false);
-    }, 2 * 1000);
-  };
+  if (!plantData) {
+    return (
+      <Layout style={styles.container}>
+        <Spinner size='giant' />
+      </Layout>
+    )
+  }
 
-  // Mood calculation based on the current data
-  const computedMood: Mood =
+  const computedMood =
     plantData.waterLevel > 50 &&
     plantData.temperature >= 22 &&
     plantData.temperature <= 28
@@ -169,12 +129,18 @@ const PlantPage: React.FC<PlantPageProps> = ({
         plantData.temperature < 22 ||
         plantData.temperature > 28
       ? Mood.Sad
-      : Mood.Neutral;
+      : Mood.Neutral
+
+  const handleValveActivation = async () => {
+    setIsValveActive(true)
+    client?.send('plante/valve', 'ON')
+    setTimeout(() => client?.send('plante/valve', 'OFF'), 2000)
+  }
 
   return (
     <Layout style={styles.container}>
       <Text category='h2' style={styles.plantName}>
-        {plantData.name} {plantData.type && plantData.type.trim() !== '' ? `(${plantData.type})` : ''}
+        {plantData.name}
       </Text>
       <Text category='h1' style={styles.smiley}>
         {getSmiley(computedMood)}
@@ -220,7 +186,7 @@ const PlantPage: React.FC<PlantPageProps> = ({
         style={styles.button}
         accessoryLeft={
           isValveActive
-            ? (props: IconProps) => <Spinner {...props} size='small' />
+            ? props => <Spinner {...props} size='small' />
             : undefined
         }
       >
@@ -230,8 +196,8 @@ const PlantPage: React.FC<PlantPageProps> = ({
         <Text style={styles.backText}>← Revenir à la page précédente</Text>
       </TouchableOpacity>
     </Layout>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -277,7 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1E90FF',
     textDecorationLine: 'underline'
-  }  
-});
+  }
+})
 
-export default PlantPage;
+export default PlantPage
