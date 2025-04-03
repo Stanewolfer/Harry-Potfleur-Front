@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import {
   CircularProgressBar,
   Icon,
@@ -10,6 +10,12 @@ import {
   IconProps,
   Spinner
 } from '@ui-kitten/components';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  PlantPage: { plant: PlantProps };
+};
 
 // Definition of the plant's possible moods
 enum Mood {
@@ -130,6 +136,7 @@ const PlantPage: React.FC<PlantPageProps> = ({
 }) => {
   const [plantData, setPlantData] = useState<PlantProps>(initialPlantData);
   const [isValveActive, setIsValveActive] = useState<boolean>(false);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     const getData = async () => {
@@ -219,6 +226,9 @@ const PlantPage: React.FC<PlantPageProps> = ({
       >
         {isValveActive ? 'Activation en cours...' : "Activer l'eau"}
       </Button>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Text style={styles.backText}>← Revenir à la page précédente</Text>
+      </TouchableOpacity>
     </Layout>
   );
 };
@@ -261,7 +271,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4
-  }
+  },
+  backText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#1E90FF',
+    textDecorationLine: 'underline'
+  }  
 });
 
 export default PlantPage;
