@@ -6,10 +6,9 @@ import {
   Icon,
   IconElement,
   Input,
-  Modal
+  Modal,
+  IconProps
 } from '@ui-kitten/components'
-
-
 
 // Composant EditButton
 interface EditButtonProps {
@@ -21,7 +20,7 @@ const EditButton = React.memo(({ id, onSave }: EditButtonProps) => {
   const [visible, setVisible] = React.useState(false)
   const [tempName, setTempName] = React.useState('')
 
-  const EditIcon = (props): IconElement => <Icon {...props} name='edit' />
+  const EditIcon = (props: IconProps): IconElement => <Icon {...props} name='edit' />
 
   return (
     <>
