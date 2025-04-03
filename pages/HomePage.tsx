@@ -33,7 +33,7 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  // Fonction pour mettre à jour le nom d'une plante
+  // Function to update a plant's name
   const updatePlantName = (index: number, newName: string) => {
     setPlants((prevPlants) => {
       const updatedPlants = [...prevPlants];
@@ -66,7 +66,7 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
             {plants.map((plant, index) => (
               <DrawerItem
                 key={index}
-                title={`${plant.name} (${plant.type && plant.type.trim() !== '' ? plant.type : 'Type non défini'})`}
+                title={plant.name}
                 accessoryLeft={() => (
                   <Layout style={styles.editButtonContainer}>
                     <EditButton id={index} onSave={updatePlantName} />
