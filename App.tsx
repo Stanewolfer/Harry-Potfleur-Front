@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import * as eva from '@eva-design/eva'
 import {
   ApplicationProvider,
-  IconRegistry,
-  Layout
-} from '@ui-kitten/components'
+  IconRegistry} from '@ui-kitten/components'
 import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import { default as theme } from './theme.json'
 import HomePage from './pages/HomePage'
 import { LoadingScreen } from './pages/LoadingPage'
 import * as Paho from 'paho-mqtt'
+import { NavigationContainer } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import PlantPage from './pages/PlantPage'
+
 
 const MQTT_BROKER = 'wss://test.mosquitto.org:8081' // URL du broker en WebSocket
 const TOPIC = 'mon_app/plants'
