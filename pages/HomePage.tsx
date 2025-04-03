@@ -84,7 +84,7 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
           <Drawer
             style={{
               width: '100%',
-              height: '100vh'
+              height: '100%'
             }}
           >
             {plants.map((plant, index) => (
