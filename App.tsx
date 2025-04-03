@@ -107,30 +107,33 @@ client.connect({
       <IconRegistry icons={EvaIconsPack} />
       <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
         <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen
               name='Home'
               component={(props: React.JSX.IntrinsicAttributes) =>
-                isLoading ? (
-                  <LoadingScreen {...props} />
-                ) : (
-                  <HomePage plants={plants} {...props} />
-                )
+              isLoading ? (
+                <LoadingScreen {...props} />
+              ) : (
+                <HomePage plants={plants} {...props} />
+              )
               }
             />
             <Stack.Screen
               name='PlantPage'
-              component={(props: NativeStackScreenProps<any, 'PlantPage'>) => (
+              component={(props: NativeStackScreenProps<any, 'PlantPage'>) => {
+              console.log('PlantPage params:', props.route.params);
+              return (
                 <PlantPage
-                  plantData={props.route.params?.plant || {}}
-                  onValveActivation={function (): void {
-                    throw new Error('Function not implemented.')
-                  }}
-                  {...props}
+                plantData={props.route.params?.plant || {}}
+                onValveActivation={function (): void {
+                  throw new Error('Function not implemented.')
+                }}
+                {...props}
                 />
-              )}
+              );
+              }}
             />
-          </Stack.Navigator>
+            </Stack.Navigator>
         </NavigationContainer>
       </ApplicationProvider>
     </>

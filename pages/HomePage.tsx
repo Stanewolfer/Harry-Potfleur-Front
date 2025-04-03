@@ -1,37 +1,46 @@
-import React from 'react';
+import React from 'react'
 import {
   Layout,
   Text,
   Divider,
   Drawer,
-  DrawerItem} from '@ui-kitten/components'
+  DrawerItem
+} from '@ui-kitten/components'
 import EditButton from './components/EditButton'
 import PlantsInfos from './components/PlantsInfos'
 import { ScrollView } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 interface PlantProps {
-  name: string;
-  type: string;
-  waterLevel: number;
-  temperature: number;
-  sunlight: number;
+  name: string
+  type: string
+  waterLevel: number
+  temperature: number
+  sunlight: number
 }
 
+type RootStackParamList = {
+  PlantPage: { plant: PlantProps };
+};
+
 interface HomePageProps {
-  plants: PlantProps[];
+  plants: PlantProps[]
 }
 
 const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
   const [plants, setPlants] = React.useState<PlantProps[]>(initialPlants)
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+
   // Fonction pour mettre à jour une plante
   const updatePlantName = (index: number, newName: string) => {
     setPlants((prevPlants: PlantProps[]) => {
-      const updatedPlants = [...prevPlants];
-      updatedPlants[index] = { ...updatedPlants[index], name: newName };
-      return updatedPlants;
-    });
-  };
-
+      const updatedPlants = [...prevPlants]
+      updatedPlants[index] = { ...updatedPlants[index], name: newName }
+      return updatedPlants
+    })
+  }
 
   // Plants list component
   return (
@@ -41,16 +50,15 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
           flex: 1,
           flexDirection: 'column',
           justifyContent: 'flex-start',
-          alignItems: 'flex-start'
+          alignItems: 'flex-start',
         }}
-        level='1'
       >
         <Layout
           style={{
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
             padding: 10,
-            width: '100%',
+            width: '100%'
           }}
         >
           <Text category='h5' status='primary'>
@@ -59,7 +67,7 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
           <Text category='s1' status='primary'>
             Une application de gestion de potfleurs
           </Text>
-          <Divider style={{ width: '100%', marginVertical:10 }} />
+          <Divider style={{ width: '100%', marginVertical: 10 }} />
           <Text category='h5' status='success'>
             Liste de vos plantes
           </Text>
@@ -87,6 +95,10 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
                   <EditButton id={index} onSave={updatePlantName} />
                 )}
                 accessoryRight={() => <PlantsInfos {...plant} />}
+                onPress={() =>{
+                  console.log(plants[index]);
+                  navigation.navigate('PlantPage', { plant: plants[index] })}
+                }
               />
             ))}
           </Drawer>
@@ -96,5 +108,4 @@ const HomePage = React.memo(({ plants: initialPlants }: HomePageProps) => {
   )
 })
 
-
-export default HomePage;
+export default HomePage
