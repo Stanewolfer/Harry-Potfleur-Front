@@ -154,7 +154,7 @@ const PlantPage: React.FC<PlantPageProps> = ({ index, plants }) => {
         style={styles.button}
         accessoryLeft={
           isValveActive
-            ? props => <Spinner {...props} size='small' />
+            ? props => <Spinner {...props} size='tiny' />
             : undefined
         }
       >

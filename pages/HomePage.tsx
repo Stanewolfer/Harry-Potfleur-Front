@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     paddingBottom: 30
   },
   editButtonContainer: {
-    marginRight: -10
+    marginRight: 2
   }
 })
 

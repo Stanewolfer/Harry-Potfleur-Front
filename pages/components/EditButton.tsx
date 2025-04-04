@@ -27,6 +27,7 @@ const EditButton = React.memo(({ id, onSave }: EditButtonProps) => {
       <Button
         status='primary'
         appearance='ghost'
+        style={{ width: 40, height: 40 }}
         accessoryLeft={EditIcon}
         onPress={() => setVisible(true)}
       >
