@@ -50,7 +50,7 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     mqttClient.connect({
       onSuccess: () => {
         console.log('Connecté à MQTT');
-        mqttClient.subscribe('plante/valve');
+        mqttClient.subscribe('plante/eau');
         mqttClient.subscribe('plante/data');
       },
       useSSL: true,

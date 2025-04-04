@@ -8,60 +8,28 @@ import {
 } from '@ui-kitten/components'
 import EditButton from './components/EditButton'
 import PlantsInfos from './components/PlantsInfos'
-import { SafeAreaView, ScrollView, StyleSheet } from 'react-native'
+import { SafeAreaView, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { useMqtt } from '../MqttContext' // ✅ Import du contexte MQTT
-
-interface PlantProps {
-  name: string
-  waterLevel: number
-  temperature: number
-  sunlight: number
-}
+import { useMqtt } from '../MqttContext' // Import du contexte MQTT
+import { Plant } from '../App' // Importer l'interface Plant depuis App.js
 
 type RootStackParamList = {
-  PlantPage: { plant: PlantProps }
+  PlantPage: { index: number }
+  Home: undefined
 }
 
-const HomePage = React.memo(() => {
-  const [plants, setPlants] = useState<PlantProps[]>([
-    {
-      name: 'Monstera',
-      waterLevel: 75,
-      temperature: 23,
-      sunlight: 65
-    },
-    {
-      name: 'Cactus',
-      waterLevel: 20,
-      temperature: 28,
-      sunlight: 90
-    },
-    {
-      name: 'Fern',
-      waterLevel: 85,
-      temperature: 21,
-      sunlight: 40
-    },
-    {
-      name: 'Bamboo',
-      waterLevel: 70,
-      temperature: 22,
-      sunlight: 60
-    },
-    {
-      name: 'Succulent',
-      waterLevel: 25,
-      temperature: 26,
-      sunlight: 85
-    }
-  ])
+interface HomePageProps {
+  plants: Plant[]
+  setPlants: React.Dispatch<React.SetStateAction<Plant[]>>
+}
+
+const HomePage: React.FC<HomePageProps> = ({ plants, setPlants }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { message } = useMqtt()
 
-  // 🔥 Mettre à jour le nom de la plante
+  // Mettre à jour le nom de la plante
   const updatePlantName = (id: number, newName: string) => {
     setPlants((prevPlants) =>
       prevPlants.map((plant, index) =>
@@ -70,18 +38,20 @@ const HomePage = React.memo(() => {
     )
   }
 
-  // 🔥 Mettre à jour les plantes lorsqu'un message MQTT est reçu
+  // Mettre à jour les plantes lorsqu'un message MQTT est reçu
   useEffect(() => {
     if (message) {
       try {
-        const plantData: PlantProps = JSON.parse(message)
+        const plantData: Plant = JSON.parse(message)
+        // Vous devriez ajouter du code ici pour mettre à jour l'état des plantes
+        // en fonction des données MQTT reçues
       } catch (error) {
         console.error('Erreur lors de la mise à jour des données MQTT:', error)
       }
     }
   }, [message])
 
-  // 📜 Affichage de la liste des plantes
+  // Affichage de la liste des plantes
   return (
     <SafeAreaView style={styles.safeArea}>
       <Layout style={styles.container}>
@@ -116,9 +86,12 @@ const HomePage = React.memo(() => {
                   </Layout>
                 )}
                 accessoryRight={() => <PlantsInfos {...plant} />}
-                onPress={() =>
-                  navigation.navigate('PlantPage', { plant: plants[index] })
-                }
+                onPress={() => {
+                  console.log('Selected plant:', index)
+                  navigation.navigate('PlantPage', {
+                    index: index
+                  })
+                }}
               />
             ))}
           </Drawer>
@@ -126,7 +99,7 @@ const HomePage = React.memo(() => {
       </Layout>
     </SafeAreaView>
   )
-})
+}
 
 const styles = StyleSheet.create({
   safeArea: {

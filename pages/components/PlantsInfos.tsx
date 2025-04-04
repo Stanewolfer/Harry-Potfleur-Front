@@ -85,7 +85,7 @@ const PlantsInfos = React.memo(
           visible={sunVisible}
           onBackdropPress={() => setSunVisible(false)}
         >
-          {`Luminosité: ${sunlight}%`}
+          {`Luminosité: ${sunlight} lux`}
         </Tooltip>
       </Layout>
     )

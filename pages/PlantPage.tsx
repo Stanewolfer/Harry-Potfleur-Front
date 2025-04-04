@@ -10,8 +10,10 @@ import {
   IconProps,
   Spinner
 } from '@ui-kitten/components'
-import { useMqtt } from '../MqttContext' // ✅ Import du contexte MQTT
+import { useMqtt } from '../MqttContext' // Import du contexte MQTT
 import { useNavigation } from '@react-navigation/native'
+import LoadingScreen from './LoadingPage'
+import { Plant } from '../App' // Importer l'interface Plant depuis App.js
 
 enum Mood {
   Happy = 'happy',
@@ -19,12 +21,10 @@ enum Mood {
   Sad = 'sad'
 }
 
-interface PlantProps {
-  name: string
-  waterLevel: number
-  temperature: number
-  sunlight: number
-  mood: Mood
+// Interface pour les props du composant
+interface PlantPageProps {
+  index: number
+  plants: Plant[]
 }
 
 const getSmiley = (mood: Mood): string => {
@@ -64,60 +64,25 @@ const sunlightIcon = (props: IconProps): IconElement => (
   />
 )
 
-const fetchPlantData = async (): Promise<PlantProps> => {
-  try {
-    const response = await fetch('')
-    if (!response.ok)
-      throw new Error('Erreur lors de la récupération des données')
-
-    const data = await response.json()
-    const { name, type, temperature, sunlight, waterLevel } = data
-
-    const computedMood: Mood =
-      waterLevel > 50 && temperature >= 22 && temperature <= 28
-        ? Mood.Happy
-        : waterLevel < 30 || temperature < 22 || temperature > 28
-        ? Mood.Sad
-        : Mood.Neutral
-
-    return { name, temperature, sunlight, waterLevel, mood: computedMood }
-  } catch (error) {
-    console.error(error)
-    return {
-      name: 'Plante introuvable',
-      temperature: 0,
-      sunlight: 0,
-      waterLevel: 0,
-      mood: Mood.Neutral
-    }
-  }
-}
-
-const PlantPage: React.FC = () => {
+const PlantPage: React.FC<PlantPageProps> = ({ index, plants }) => {
   const mqttClient = useMqtt()
   const { client } = mqttClient
 
-  const [plantData, setPlantData] = useState<PlantProps | null>(null)
+  const [plantData, setPlantData] = useState<Plant | null>(null)
   const [isValveActive, setIsValveActive] = useState<boolean>(false)
   const navigation = useNavigation()
 
   useEffect(() => {
-    const getData = async () => {
-      const data = await fetchPlantData()
-      setPlantData(data)
+    // Vérifie que index est valide et que plants existe et contient l'élément à cet index
+    if (plants && index >= 0 && index < plants.length) {
+      setPlantData(plants[index])
+    } else {
+      console.error("Index invalide ou plantes non disponibles:", { index, plantsLength: plants?.length })
     }
-
-    getData()
-    const interval = setInterval(getData, 5 * 1000)
-    return () => clearInterval(interval)
-  }, [])
+  }, [index, plants])
 
   if (!plantData) {
-    return (
-      <Layout style={styles.container}>
-        <Spinner size='giant' />
-      </Layout>
-    )
+    return <LoadingScreen />
   }
 
   const computedMood =
@@ -133,8 +98,11 @@ const PlantPage: React.FC = () => {
 
   const handleValveActivation = async () => {
     setIsValveActive(true)
-    client?.send('plante/valve', 'ON')
-    setTimeout(() => client?.send('plante/valve', 'OFF'), 2000)
+    client?.send('plante/eau', 'true')
+    setTimeout(() => {
+      client?.send('plante/eau', 'false')
+      setIsValveActive(false)
+    }, 2000)
   }
 
   return (
