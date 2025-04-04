@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as Paho from 'paho-mqtt';
 
-// Définition du type du contexte
+// Type d'un message MQTT structuré
+interface MqttMessage {
+  topic: string;
+  payload: any; // Peut être string ou un objet JSON parsé
+}
+
+// Type du contexte
 interface MqttContextType {
   client: Paho.Client | null;
-  message: string;
+  lastMessage: MqttMessage | null;
   sendMessage: (topic: string, msg: string) => void;
 }
 
@@ -20,30 +26,29 @@ export const useMqtt = () => {
   return context;
 };
 
-// Composant fournisseur du contexte MQTT
+// Provider du contexte
 export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [client, setClient] = useState<Paho.Client | null>(null);
-  const [message, setMessage] = useState<string>('');
+  const [lastMessage, setLastMessage] = useState<MqttMessage | null>(null);
 
   useEffect(() => {
     // Initialisation du client MQTT
     const mqttClient = new Paho.Client(
       'test.mosquitto.org', // Host MQTT
-      8081, // Port WebSocket
-      `rn_client_${Math.random()}` // ID unique pour le client
+      8081,                  // Port WebSocket sécurisé
+      `rn_client_${Math.random()}` // ID unique
     );
 
-    // Callback pour gérer la perte de connexion
+    // Gestion de la perte de connexion
     mqttClient.onConnectionLost = (responseObject) => {
       if (responseObject.errorCode !== 0) {
         console.log(`Connexion perdue : ${responseObject.errorMessage}`);
-        // Tentative de reconnexion après un délai
         setTimeout(() => {
           mqttClient.connect({
             onSuccess: () => {
               console.log('Reconnecté à MQTT');
               mqttClient.subscribe('plante/eau');
-              mqttClient.subscribe('plante/data');
+              mqttClient.subscribe('plante/stats');
             },
             useSSL: true,
             timeout: 10,
@@ -53,18 +58,29 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    // Callback pour la réception de messages
+    // Réception de message
     mqttClient.onMessageArrived = (message) => {
       console.log(`Message reçu sur ${message.destinationName}: ${message.payloadString}`);
-      setMessage(message.payloadString);
+      try {
+        const parsedPayload = JSON.parse(message.payloadString);
+        setLastMessage({
+          topic: message.destinationName,
+          payload: parsedPayload,
+        });
+      } catch (e) {
+        setLastMessage({
+          topic: message.destinationName,
+          payload: message.payloadString,
+        });
+      }
     };
 
-    // Connexion au broker MQTT
+    // Connexion
     mqttClient.connect({
       onSuccess: () => {
         console.log('Connecté à MQTT');
         mqttClient.subscribe('plante/eau');
-        mqttClient.subscribe('plante/data');
+        mqttClient.subscribe('plante/stats');
       },
       useSSL: true,
       timeout: 10,
@@ -78,7 +94,7 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Fonction pour envoyer un message MQTT
+  // Envoi de message
   const sendMessage = (topic: string, msg: string) => {
     if (client) {
       const message = new Paho.Message(msg);
@@ -89,7 +105,7 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <MqttContext.Provider value={{ client, message, sendMessage }}>
+    <MqttContext.Provider value={{ client, lastMessage, sendMessage }}>
       {children}
     </MqttContext.Provider>
   );

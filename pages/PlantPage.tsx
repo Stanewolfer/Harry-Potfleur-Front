@@ -13,7 +13,7 @@ import {
 import { useMqtt } from '../MqttContext' // Import du contexte MQTT
 import { useNavigation } from '@react-navigation/native'
 import LoadingScreen from './LoadingPage'
-import { Plant } from '../App' // Importer l'interface Plant depuis App.js
+import { Plant } from '../MainApp' // Importer l'interface Plant depuis App.js
 
 enum Mood {
   Happy = 'happy',

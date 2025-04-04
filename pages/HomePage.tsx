@@ -12,7 +12,7 @@ import { SafeAreaView, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useMqtt } from '../MqttContext' // Import du contexte MQTT
-import { Plant } from '../App' // Importer l'interface Plant depuis App.js
+import { Plant } from '../MainApp' // Importer l'interface Plant depuis App.js
 
 type RootStackParamList = {
   PlantPage: { index: number }
@@ -27,7 +27,7 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ plants, setPlants }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>()
-  const { message } = useMqtt()
+  const { lastMessage } = useMqtt()
 
   // Mettre à jour le nom de la plante
   const updatePlantName = (id: number, newName: string) => {
@@ -40,16 +40,16 @@ const HomePage: React.FC<HomePageProps> = ({ plants, setPlants }) => {
 
   // Mettre à jour les plantes lorsqu'un message MQTT est reçu
   useEffect(() => {
-    if (message) {
+    if (lastMessage) {
       try {
-        const plantData: Plant = JSON.parse(message)
+        const plantData: Plant = JSON.parse(lastMessage.payload)
         // Vous devriez ajouter du code ici pour mettre à jour l'état des plantes
         // en fonction des données MQTT reçues
       } catch (error) {
         console.error('Erreur lors de la mise à jour des données MQTT:', error)
       }
     }
-  }, [message])
+  }, [lastMessage])
 
   // Affichage de la liste des plantes
   return (
