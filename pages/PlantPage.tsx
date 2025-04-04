@@ -76,6 +76,7 @@ const PlantPage: React.FC<PlantPageProps> = ({ index, plants }) => {
     // Vérifie que index est valide et que plants existe et contient l'élément à cet index
     if (plants && index >= 0 && index < plants.length) {
       setPlantData(plants[index])
+      console.log("Données de la plante séléctionnée :", plants[index])
     } else {
       console.error("Index invalide ou plantes non disponibles:", { index, plantsLength: plants?.length })
     }

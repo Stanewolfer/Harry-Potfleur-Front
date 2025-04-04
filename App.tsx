@@ -23,43 +23,59 @@ const Stack = createNativeStackNavigator()
 
 export default () => {
   const [isLoading, setIsLoading] = useState(true)
-  const [plants, setPlants] = useState<Plant[]>([
-    {
-      name: 'Monstera',
-      waterLevel: 75,
-      temperature: 23,
-      sunlight: 65,
-    },
-    {
-      name: 'Cactus',
-      waterLevel: 20,
-      temperature: 28,
-      sunlight: 90,
-    },
-    {
-      name: 'Fern',
-      waterLevel: 85,
-      temperature: 21,
-      sunlight: 40,
-    },
-    {
-      name: 'Bamboo',
-      waterLevel: 70,
-      temperature: 22,
-      sunlight: 60,
-    },
-    {
-      name: 'Succulent',
-      waterLevel: 25,
-      temperature: 26,
-      sunlight: 85,
-    }
-  ])
+  const [plants, setPlants] = useState<Plant[]>([])
 
+  // Vérification si les plantes sont chargées
+  // Si les plantes sont chargées, on enlève le loading
+  // Sinon on affiche le loading et on charge les plantes
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2000)
-    return () => clearTimeout(timer)
-  }, [])
+    if (plants.length > 0) {
+      console.log('Plantes chargées:', plants)
+      setIsLoading(false)
+    } else {
+      setIsLoading(true)
+      fetchPlants()
+    }
+  }, [plants])
+
+  // Fonction pour charger les plantes
+  const fetchPlants = async () => {
+    // Simuler un chargement de données avec un délai
+    setTimeout(() => {
+      setPlants([
+        {
+          name: 'Monstera',
+          waterLevel: 75,
+          temperature: 23,
+          sunlight: 65
+        },
+        {
+          name: 'Cactus',
+          waterLevel: 20,
+          temperature: 28,
+          sunlight: 90
+        },
+        {
+          name: 'Fern',
+          waterLevel: 85,
+          temperature: 21,
+          sunlight: 40
+        },
+        {
+          name: 'Bamboo',
+          waterLevel: 70,
+          temperature: 22,
+          sunlight: 60
+        },
+        {
+          name: 'Succulent',
+          waterLevel: 25,
+          temperature: 26,
+          sunlight: 85
+        }
+      ])
+    }, 2000)
+  }
 
   return (
     <>
@@ -74,19 +90,21 @@ export default () => {
                   isLoading ? (
                     <LoadingScreen {...props} />
                   ) : (
-                    <HomePage plants={plants} setPlants={setPlants} {...props} />
+                    <HomePage
+                      plants={plants}
+                      setPlants={setPlants}
+                      {...props}
+                    />
                   )
                 }
               />
               <Stack.Screen
                 name='PlantPage'
-                component={
-                  (props: any) => {
-                    // Correction ici: accéder directement à l'index
-                    const index = props.route.params.index;
-                    return <PlantPage index={index} plants={plants} />;
-                  }
-                }
+                component={(props: any) => {
+                  // Correction ici: accéder directement à l'index
+                  const index = props.route.params.index
+                  return <PlantPage index={index} plants={plants} />
+                }}
               />
             </Stack.Navigator>
           </NavigationContainer>
