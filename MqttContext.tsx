@@ -37,6 +37,19 @@ export const MqttProvider: React.FC<{ children: React.ReactNode }> = ({ children
     mqttClient.onConnectionLost = (responseObject) => {
       if (responseObject.errorCode !== 0) {
         console.log(`Connexion perdue : ${responseObject.errorMessage}`);
+        // Tentative de reconnexion après un délai
+        setTimeout(() => {
+          mqttClient.connect({
+            onSuccess: () => {
+              console.log('Reconnecté à MQTT');
+              mqttClient.subscribe('plante/eau');
+              mqttClient.subscribe('plante/data');
+            },
+            useSSL: true,
+            timeout: 10,
+            onFailure: (err) => console.log('Erreur de reconnexion MQTT', err),
+          });
+        }, 1000);
       }
     };
 
